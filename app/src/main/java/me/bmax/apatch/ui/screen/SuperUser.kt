@@ -162,6 +162,9 @@ private fun AppItem(
                 showEditProfile = !showEditProfile
             } else {
                 rootGranted = false
+                config.allow = 0
+                Natives.revokeSu(app.uid)
+                PkgConfig.changeConfig(config)
             }
         }),
         headlineContent = { Text(app.label) },
@@ -202,13 +205,20 @@ private fun AppItem(
         trailingContent = {
             Switch(checked = rootGranted, onCheckedChange = {
                 rootGranted = !rootGranted
-                config.allow = if (rootGranted) 1 else 0
                 if (rootGranted) {
+                    excludeApp = 0
+                    config.allow = 1
+                    config.exclude = 0
+                } else {
+                    config.allow = 0
+                }
+                config.profile.uid = app.uid
+                PkgConfig.changeConfig(config)
+                if (config.allow == 1) {
                     Natives.grantSu(app.uid, 0, config.profile.scontext)
                 } else {
                     Natives.revokeSu(app.uid)
                 }
-                PkgConfig.changeConfig(config)
             })
         },
     )
@@ -234,8 +244,15 @@ private fun AppItem(
                 summary = stringResource(id = R.string.su_pkg_excluded_setting_summary),
                 checked = excludeApp == 1,
                 onCheckedChange = {
-                    excludeApp = if (it) 1 else 0
+                    if (it) {
+                        excludeApp = 1
+                        config.allow = 0
+                        Natives.revokeSu(app.uid)
+                    } else {
+                        excludeApp = 0
+                    }
                     config.exclude = excludeApp
+                    config.profile.uid = app.uid
                     PkgConfig.changeConfig(config)
                 },
             )

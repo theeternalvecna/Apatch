@@ -44,7 +44,7 @@ class SuperUserViewModel : ViewModel() {
         val packageName: String
             get() = packageInfo.packageName
         val uid: Int
-            get() = packageInfo.applicationInfo.uid
+            get() = packageInfo.applicationInfo!!.uid
     }
 
     var search by mutableStateOf("")
@@ -72,7 +72,7 @@ class SuperUserViewModel : ViewModel() {
                 .toPinyinString(it.label).contains(search.lowercase())
         }.filter {
             it.uid == 2000 // Always show shell
-                    || showSystemApps || it.packageInfo.applicationInfo.flags.and(ApplicationInfo.FLAG_SYSTEM) == 0
+                    || showSystemApps || it.packageInfo.applicationInfo!!.flags.and(ApplicationInfo.FLAG_SYSTEM) == 0
         }
     }
 
@@ -130,10 +130,10 @@ class SuperUserViewModel : ViewModel() {
 
             apps = allPackages.list.map {
                 val appInfo = it.applicationInfo
-                val uid = appInfo.uid
+                val uid = appInfo!!.uid
                 val actProfile = if (uids.contains(uid)) Natives.suProfile(uid) else null
                 val config = configs.getOrDefault(
-                    uid, PkgConfig.Config(appInfo.packageName, 0, 0, Natives.Profile(uid))
+                    uid, PkgConfig.Config(appInfo.packageName, 0, 0, Natives.Profile(uid = uid))
                 )
                 config.allow = 0
 
@@ -141,9 +141,6 @@ class SuperUserViewModel : ViewModel() {
                 if (actProfile != null) {
                     config.allow = 1
                     config.profile = actProfile
-                } else {
-                    // null profile from kernel need configure uid manually
-                    config.profile.uid = uid
                 }
                 AppInfo(
                     label = appInfo.loadLabel(apApp.packageManager).toString(),

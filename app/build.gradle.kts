@@ -40,6 +40,7 @@ android {
             isShrinkResources = true
             isDebuggable = false
             multiDexEnabled = true
+            vcsInfo.include = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -53,14 +54,21 @@ android {
         aidl = true
         buildConfig = true
         compose = true
+        prefab = true
     }
 
     defaultConfig {
         buildConfigField("String", "buildKPV", "\"$kernelPatchVersion\"")
     }
 
-    kotlinOptions {
-        jvmTarget = "21"
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(JavaVersion.VERSION_22.majorVersion)
+        }
+    }
+
+    kotlin {
+        jvmToolchain(JavaVersion.VERSION_22.majorVersion.toInt())
     }
 
     composeCompiler {
@@ -73,16 +81,15 @@ android {
             useLegacyPackaging = true
         }
         resources {
-            excludes += "/META-INF/{AL2.0,LGPL2.1}"
-            excludes += "/META-INF/**.version"
-            excludes += "META-INF/versions/9/OSGI-INF/MANIFEST.MF"
-            excludes += "okhttp3/**"
-            excludes += "kotlin/**"
-            excludes += "/org/bouncycastle/**"
-            excludes += "org/**"
-            excludes += "**.properties"
-            excludes += "**.bin"
-            excludes += "kotlin-tooling-metadata.json"
+            excludes += "**"
+            merges += "META-INF/com/google/android/**"
+        }
+    }
+
+    externalNativeBuild {
+        cmake {
+            version = "3.28.0+"
+            path("src/main/cpp/CMakeLists.txt")
         }
     }
 
@@ -114,11 +121,11 @@ fun registerDownloadTask(
 
         doLast {
             if (!destFile.exists() || isFileUpdated(srcUrl, destFile)) {
-                println("Downloading $srcUrl to ${destFile.absolutePath}")
+                println(" - Downloading $srcUrl to ${destFile.absolutePath}")
                 downloadFile(srcUrl, destFile)
-                println("Download completed.")
+                println(" - Download completed.")
             } else {
-                println("File is up to date, skipping download.")
+                println(" - File is up-to-date, skipping download.")
             }
         }
     }
@@ -146,42 +153,36 @@ registerDownloadTask(
 )
 
 registerDownloadTask(
-    taskName = "downloadKpatch",
-    srcUrl = "https://github.com/bmax121/KernelPatch/releases/download/$kernelPatchVersion/kpatch-android",
-    destPath = "${project.projectDir}/libs/arm64-v8a/libkpatch.so",
-    project = project
-)
-
-registerDownloadTask(
     taskName = "downloadKptools",
     srcUrl = "https://github.com/bmax121/KernelPatch/releases/download/$kernelPatchVersion/kptools-android",
     destPath = "${project.projectDir}/libs/arm64-v8a/libkptools.so",
     project = project
 )
 
+// Compat kp version less than 0.10.7
+// TODO: Remove in future
 registerDownloadTask(
-    taskName = "downloadApjni",
-    srcUrl = "https://github.com/bmax121/KernelPatch/releases/download/$kernelPatchVersion/libapjni.so",
-    destPath = "${project.projectDir}/libs/arm64-v8a/libapjni.so",
+    taskName = "downloadCompatKpatch",
+    srcUrl = "https://github.com/bmax121/KernelPatch/releases/download/0.10.7/kpatch-android",
+    destPath = "${project.projectDir}/libs/arm64-v8a/libkpatch.so",
     project = project
 )
 
-tasks.register<Copy>("mergeFlashableScript") {
+tasks.register<Copy>("mergeScripts") {
     into("${project.projectDir}/src/main/resources/META-INF/com/google/android")
     from(rootProject.file("${project.rootDir}/scripts/update_binary.sh")) {
         rename { "update-binary" }
     }
-    from(rootProject.file("${project.rootDir}/scripts/update_binary.sh")) {
+    from(rootProject.file("${project.rootDir}/scripts/update_script.sh")) {
         rename { "updater-script" }
     }
 }
 
 tasks.getByName("preBuild").dependsOn(
     "downloadKpimg",
-    "downloadKpatch",
     "downloadKptools",
-    "downloadApjni",
-    "mergeFlashableScript",
+    "downloadCompatKpatch",
+    "mergeScripts",
 )
 
 // https://github.com/bbqsrc/cargo-ndk
@@ -270,4 +271,5 @@ dependencies {
 
     implementation(libs.markdown)
     implementation(libs.com.google.accompanist.webview)
+    compileOnly(libs.cxx)
 }

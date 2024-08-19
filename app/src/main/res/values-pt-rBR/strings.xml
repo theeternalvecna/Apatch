@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="home_learn_android_patch_url">https://apatch.top/pt_BR/what-is-apatch.html</string>
     <string name="app_name" translatable="false">APatch</string>
     <string name="home">Início</string>
     <string name="patch_warnning">A instalação apresenta riscos. Por favor, certifique-se de fazer backup de seus dados.</string>
@@ -169,7 +168,7 @@
     <string name="home_new_apatch_found">Nova versão %s está disponível, clique para atualizar.</string>
     <string name="patch_mode_install_to_next_slot">Modo: Instalar no slot inativo (após o OTA)</string>
     <string name="home_device_info">Dispositivo</string>
-    <string name="home_dialog_uninstall_ap_only">Remover AndroidPatch</string>
+    <string name="home_dialog_uninstall_ap_only">Desinstalar AndroidPatch</string>
     <string name="home_dialog_uninstall_all">Desinstalar tudo</string>
     <string name="home_install_unknown_summary">Clique para instalar</string>
     <string name="home_system_version">Versão do sistema</string>
@@ -181,7 +180,7 @@
     <string name="settings_custom_color_theme">Tema de cores</string>
     <string name="green_theme">Verde</string>
     <string name="deep_orange_theme">Laranja profundo</string>
-    <string name="lime_theme">Lima</string>
+    <string name="lime_theme">Verde-limão</string>
     <string name="orange_theme">Laranja</string>
     <string name="teal_theme">Verde-azulado</string>
     <string name="kpm_control_failed">Operação falhou!</string>
@@ -207,10 +206,10 @@
     <string name="settings_night_mode_follow_sys">Seguir tema escuro do sistema</string>
     <string name="amber_theme">Âmbar</string>
     <string name="blue_grey_theme">Cinza-azulado</string>
-    <string name="indigo_theme">Índigo</string>
+    <string name="indigo_theme">Azul-anil</string>
     <string name="brown_theme">Marrom</string>
     <string name="deep_purple_theme">Roxo profundo</string>
-    <string name="about_app_desc">Solução root do kernel com apenas uma imagem do kernel despojada, fornecendo a capacidade de montar módulos do sistema e realizar a interceptação de funções do kernel.</string>
+    <string name="about_app_desc">Solução root do kernel com uma única imagem despojada, oferecendo a capacidade de montar módulos do sistema e interceptar funções do kernel.</string>
     <string name="kpm_control_dialog_title">Controlar KPMódulo</string>
     <string name="save_log">Salvar registros</string>
 </resources>

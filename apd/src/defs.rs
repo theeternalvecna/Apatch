@@ -9,9 +9,6 @@ pub const AP_RC_PATH: &str = concatcp!(WORKING_DIR, ".aprc");
 pub const AP_OVERLAY_SOURCE: &str = "APatch";
 pub const DAEMON_PATH: &str = concatcp!(ADB_DIR, "apd");
 
-#[cfg(target_os = "android")]
-pub const SAFEMODE_PATH: &str = "/dev/.safemode";
-
 pub const MODULE_DIR: &str = concatcp!(ADB_DIR, "modules/");
 pub const MODULE_IMG: &str = concatcp!(WORKING_DIR, "modules.img");
 pub const MODULE_UPDATE_IMG: &str = concatcp!(WORKING_DIR, "modules_update.img");
@@ -27,6 +24,7 @@ pub const TEMP_DIR: &str = "/debug_ramdisk";
 pub const TEMP_DIR_LEGACY: &str = "/sbin";
 
 pub const MODULE_WEB_DIR: &str = "webroot";
+pub const MODULE_ACTION_SH: &str = "action.sh";
 pub const DISABLE_FILE_NAME: &str = "disable";
 pub const UPDATE_FILE_NAME: &str = "update";
 pub const REMOVE_FILE_NAME: &str = "remove";
@@ -35,3 +33,5 @@ pub const PTS_NAME: &str = "pts";
 
 pub const VERSION_CODE: &str = include_str!(concat!(env!("OUT_DIR"), "/VERSION_CODE"));
 pub const VERSION_NAME: &str = include_str!(concat!(env!("OUT_DIR"), "/VERSION_NAME"));
+
+pub const APATCH_LOG_FOLDER: &str = "/data/adb/ap/log/";

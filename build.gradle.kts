@@ -13,40 +13,21 @@ plugins {
 
 cmaker {
     default {
-        arguments.addAll(
-            arrayOf(
-                "-DANDROID_STL=c++_static",
-            )
-        )
-        val flags = arrayOf(
-            "-Wno-gnu-string-literal-operator-template",
-            "-Wno-c++2b-extensions",
-        )
-        cFlags.addAll(flags)
-        cppFlags.addAll(flags)
+        arguments += "-DANDROID_STL=none"
+        arguments += "-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON"
         abiFilters("arm64-v8a")
-    }
-    buildTypes {
-        if (it.name == "release") {
-            arguments += "-DDEBUG_SYMBOLS_PATH=${project.layout.buildDirectory}/symbols"
-        }
     }
 }
 
-project.ext.set("kernelPatchVersion", "0.10.7")
+project.ext.set("kernelPatchVersion", "0.11.1-dev")
 
 val androidMinSdkVersion = 26
-val androidTargetSdkVersion = 34
-val androidCompileSdkVersion = 34
+val androidTargetSdkVersion = 35
+val androidCompileSdkVersion = 35
 
-val androidCompileNdkVersion = "25.2.9519653"
-
-val androidSourceCompatibility = JavaVersion.VERSION_21
-val androidTargetCompatibility = JavaVersion.VERSION_21
-
+val androidCompileNdkVersion = "27.0.12077973"
 val managerVersionCode by extra(getVersionCode())
 val managerVersionName by extra(getVersionName())
-
 
 tasks.register<Delete>("clean") {
     delete(rootProject.layout.buildDirectory)
@@ -105,11 +86,6 @@ subprojects {
             lint {
                 abortOnError = true
                 checkReleaseBuilds = false
-            }
-
-            compileOptions {
-                sourceCompatibility = androidSourceCompatibility
-                targetCompatibility = androidTargetCompatibility
             }
         }
     }

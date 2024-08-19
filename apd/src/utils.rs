@@ -1,9 +1,10 @@
 use anyhow::{bail, Context, Error, Ok, Result};
+use log::{info, warn};
+use std::ffi::CString;
 use std::{
-    fs::{self, create_dir_all, File, OpenOptions},
+    fs::{create_dir_all, File, OpenOptions},
     io::{ErrorKind::AlreadyExists, Write},
     path::Path,
-    sync::OnceLock,
 };
 
 #[allow(unused_imports)]
@@ -13,6 +14,8 @@ use std::os::unix::prelude::PermissionsExt;
 
 use crate::defs;
 use std::fs::metadata;
+
+use crate::supercall::sc_su_get_safemode;
 
 pub fn ensure_clean_dir(dir: &str) -> Result<()> {
     let path = Path::new(dir);
@@ -65,19 +68,28 @@ pub fn getprop(_prop: &str) -> Option<String> {
     unimplemented!()
 }
 
-pub fn is_safe_mode() -> bool {
+pub fn is_safe_mode(superkey: Option<String>) -> bool {
     let safemode = getprop("persist.sys.safemode")
         .filter(|prop| prop == "1")
         .is_some()
         || getprop("ro.sys.safemode")
             .filter(|prop| prop == "1")
             .is_some();
-    log::info!("safemode: {}", safemode);
+    info!("safemode: {}", safemode);
     if safemode {
         return true;
     }
-    let safemode = Path::new(defs::SAFEMODE_PATH).exists();
-    log::info!("kernel_safemode: {}", safemode);
+    let safemode = superkey
+        .as_ref()
+        .and_then(|key_str| CString::new(key_str.as_str()).ok())
+        .map_or_else(
+            || {
+                warn!("[is_safe_mode] No valid superkey provided, assuming safemode as false.");
+                false
+            },
+            |cstr| sc_su_get_safemode(&cstr) == 1,
+        );
+    info!("kernel_safemode: {}", safemode);
     safemode
 }
 
@@ -151,65 +163,12 @@ pub fn umask(_mask: u32) {
 pub fn has_magisk() -> bool {
     which::which("magisk").is_ok()
 }
-
-fn is_ok_empty(dir: &str) -> bool {
-    use std::result::Result::{Err, Ok};
-
-    match fs::read_dir(dir) {
-        Ok(mut entries) => entries.next().is_none(),
-        Err(_) => false,
-    }
-}
-
-fn find_temp_path() -> String {
-    use std::result::Result::{Err, Ok};
-
-    if is_ok_empty(defs::TEMP_DIR) {
-        return defs::TEMP_DIR.to_string();
-    }
-
-    // Try to create a random directory in /dev/
-    let r = tempdir::TempDir::new_in("/dev/", "");
-    match r {
-        Ok(tmp_dir) => {
-            if let Some(path) = tmp_dir.into_path().to_str() {
-                return path.to_string();
-            }
-        }
-        Err(_e) => {}
-    }
-
-    let dirs = [
-        defs::TEMP_DIR,
-        "/patch_hw",
-        "/oem",
-        "/root",
-        defs::TEMP_DIR_LEGACY,
-    ];
-
-    // find empty directory
-    for dir in dirs {
-        if is_ok_empty(dir) {
-            return dir.to_string();
-        }
-    }
-
-    // Fallback to non-empty directory
-    for dir in dirs {
-        if metadata(dir).is_ok() {
-            return dir.to_string();
-        }
-    }
-
-    "".to_string()
-}
-
 pub fn get_tmp_path() -> &'static str {
-    static CHOSEN_TMP_PATH: OnceLock<String> = OnceLock::new();
-
-    CHOSEN_TMP_PATH.get_or_init(|| {
-        let r = find_temp_path();
-        log::info!("Chosen temp_path: {}", r);
-        r
-    })
+    if metadata(defs::TEMP_DIR_LEGACY).is_ok() {
+        return defs::TEMP_DIR_LEGACY;
+    }
+    if metadata(defs::TEMP_DIR).is_ok() {
+        return defs::TEMP_DIR;
+    }
+    ""
 }

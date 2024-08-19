@@ -26,22 +26,17 @@ class APApplication : Application() {
     enum class State {
         UNKNOWN_STATE,
 
-        KERNELPATCH_INSTALLED,
-        KERNELPATCH_NEED_UPDATE,
-        KERNELPATCH_NEED_REBOOT,
-        KERNELPATCH_UNINSTALLING,
+        KERNELPATCH_INSTALLED, KERNELPATCH_NEED_UPDATE, KERNELPATCH_NEED_REBOOT, KERNELPATCH_UNINSTALLING,
 
-        ANDROIDPATCH_NOT_INSTALLED,
-        ANDROIDPATCH_INSTALLED,
-        ANDROIDPATCH_INSTALLING,
-        ANDROIDPATCH_NEED_UPDATE,
-        ANDROIDPATCH_UNINSTALLING,
+        ANDROIDPATCH_NOT_INSTALLED, ANDROIDPATCH_INSTALLED, ANDROIDPATCH_INSTALLING, ANDROIDPATCH_NEED_UPDATE, ANDROIDPATCH_UNINSTALLING,
     }
 
 
     companion object {
         const val APD_PATH = "/data/adb/apd"
-        private const val KPATCH_PATH = "/data/adb/kpatch"
+
+        @Deprecated("No more KPatch ELF from 0.11.0-dev")
+        const val KPATCH_PATH = "/data/adb/kpatch"
         const val SUPERCMD = "/system/bin/truncate"
         const val APATCH_FOLDER = "/data/adb/ap/"
         private const val APATCH_BIN_FOLDER = APATCH_FOLDER + "bin/"
@@ -109,9 +104,7 @@ class APApplication : Application() {
         @Suppress("DEPRECATION")
         fun installApatch() {
             val state = _apStateLiveData.value
-            if (state != State.ANDROIDPATCH_NOT_INSTALLED &&
-                state != State.ANDROIDPATCH_NEED_UPDATE
-            ) {
+            if (state != State.ANDROIDPATCH_NOT_INSTALLED && state != State.ANDROIDPATCH_NEED_UPDATE) {
                 return
             }
             _apStateLiveData.value = State.ANDROIDPATCH_INSTALLING
@@ -122,12 +115,6 @@ class APApplication : Application() {
             val cmds = arrayOf(
                 "mkdir -p $APATCH_BIN_FOLDER",
                 "mkdir -p $APATCH_LOG_FOLDER",
-
-                // TODO: kpatch extracted from kernel
-                "cp -f ${nativeDir}/libkpatch.so $KPATCH_PATH",
-                "chmod +x $KPATCH_PATH",
-                "ln -s $KPATCH_PATH $KPATCH_LINK_PATH",
-                "restorecon $KPATCH_PATH",
 
                 "cp -f ${nativeDir}/libapd.so $APD_PATH",
                 "chmod +x $APD_PATH",
