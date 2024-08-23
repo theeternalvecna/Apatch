@@ -159,6 +159,13 @@ registerDownloadTask(
     project = project
 )
 
+registerDownloadTask(
+    taskName = "downloadToybox",
+    srcUrl = "http://landley.net/toybox/bin/toybox-aarch64",
+    destPath = "${project.projectDir}/libs/arm64-v8a/libtoybox.so",
+    project = project
+)
+
 // Compat kp version less than 0.10.7
 // TODO: Remove in future
 registerDownloadTask(
@@ -182,6 +189,7 @@ tasks.getByName("preBuild").dependsOn(
     "downloadKpimg",
     "downloadKptools",
     "downloadCompatKpatch",
+    "downloadToybox",
     "mergeScripts",
 )
 
