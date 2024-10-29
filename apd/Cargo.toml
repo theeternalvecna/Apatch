@@ -39,13 +39,13 @@ sha256 = "1"
 tempdir = "0.3"
 chrono = "0.4"
 errno = "0.3.9"
-notify = "6.1"
+notify = "7.0"
 
 [target.'cfg(any(target_os = "android", target_os = "linux"))'.dependencies]
 rustix = { git = "https://github.com/AndroidPatch/rustix", branch = "main", features = ["all-apis"] }
 # some android specific dependencies which compiles under unix are also listed here for convenience of coding
 android-properties = { version = "0.2.2", features = ["bionic-deprecated"] }
-procfs = "0.16"
+procfs = "0.17"
 loopdev = { git = "https://github.com/AndroidPatch/loopdev" }
 
 [target.'cfg(target_os = "android")'.dependencies]
